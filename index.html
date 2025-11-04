@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncWell - Community Diabetes Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #334155;
+        }
+
+        /* QR Code Pattern */
+        .qr-pattern {
+            width: 100%;
+            height: 100%;
+            background: white;
+            position: relative;
+            background-image: 
+                repeating-linear-gradient(0deg, #000 0px, #000 3px, transparent 3px, transparent 6px),
+                repeating-linear-gradient(90deg, #000 0px, #000 3px, transparent 3px, transparent 6px);
+        }
+
+        .qr-pattern::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border: 2px solid #000;
+        }
+
+        .qr-pattern::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border: 2px solid #000;
+        }
+
+        .qr-bottom-corner {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border: 2px solid #000;
+        }
+
+        .qr-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: repeating-linear-gradient(45deg, #000 0px, #000 2px, transparent 2px, transparent 4px);
+        }
+
+        /* Demo Header */
+        .demo-header {
+            text-align: center;
+            color: #334155;
+            margin-bottom: 30px;
+        }
+
+        .demo-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .sync-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sync-circles {
+            position: relative;
+            width: 40px;
+            height: 25px;
+        }
+
+        .circle-primary {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: #3b82f6;
+            border-radius: 50%;
+            left: 0;
+            opacity: 0.9;
+        }
+
+        .circle-health {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: #10b981;
+            border-radius: 50%;
+            right: 0;
+            opacity: 0.8;
+        }
+
+        .sync-text {
+            font-size: 28px;
+            font-weight: 300;
+            color: #334155;
+        }
+
+        .demo-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            font-style: italic;
+            margin: 10px 0 20px 0;
+        }
+
+        .demo-info {
+            background: rgba(255,255,255,0.8);
+            padding: 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            max-width: 600px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .demo-info h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .demo-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .demo-info li {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #475569;
+        }
+
+        .demo-info li::before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-size: 12px;
+        }
+
+        /* Phone Container */
+        .phone-container {
+            width: min(375px, 90vw);
+            height: min(667px, 80vh);
+            background: #1e293b;
+            border-radius: 30px;
+            padding: 6px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 26px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+            background: #f8fafc;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-circles {
+            position: relative;
+            width: 30px;
+            height: 20px;
+        }
+
+        .header-circle-1 {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            left: 0;
+        }
+
+        .header-circle-2 {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            right: 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 4px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stat-timestamp {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* Chart */
+        .chart {
+            height: 120px;
+            background: linear-gradient(to right, #f0f9ff, #ecfdf5);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: end;
+            padding: 10px;
+            justify-content: space-around;
+        }
+
+        .chart-bar {
+            width: 18px;
+            background: linear-gradient(to top, #3b82f6, #10b981);
+            border-radius: 3px 3px 0 0;
+            margin: 0 2px;
+            position: relative;
+        }
+
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        /* Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-card {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .action-card:hover {
+            background: #f0f9ff;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .action-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        /* Market Items */
+        .market-item {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .market-item:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+            background: white;
+        }
+
+        .market-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            color: white;
+        }
+
+        .market-info {
+            flex: 1;
+        }
+
+        .market-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .market-description {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .market-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .market-cost {
+            background: #ecfdf5;
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .market-discount {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Button */
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 41, 59, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Achievement Animation */
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
+            z-index: 1000;
+            animation: achievementPop 3s ease-in-out;
+        }
+
+        @keyframes achievementPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        .demo-footer {
+            text-align: center;
+            color: #64748b;
+            margin-top: 30px;
+            max-width: 600px;
+        }
+
+        .demo-footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>
+            <div class="sync-logo">
+                <div class="sync-circles">
+                    <div class="circle-primary"></div>
+                    <div class="circle-health"></div>
+                </div>
+                <span class="sync-text">SyncWell</span>
+            </div>
+        </h1>
+        <p>Community-Based Diabetes Management Platform</p>
+        <div class="demo-subtitle">"The essence of synchronization"</div>
+    </div>
+
+    <div class="demo-info">
+        <h3>About SyncWell</h3>
+        <p style="margin-bottom: 15px; line-height: 1.5;">SyncWell is a comprehensive community-based diabetes management platform that bridges the gap between patients and healthcare resources through strategically placed kiosks in public locations. The app gamifies health monitoring by rewarding users with points for regular glucose testing, which can be redeemed at local partner businesses for healthy meals, fitness activities, and educational experiences, creating a sustainable ecosystem that promotes better diabetes self-management while supporting community health initiatives.</p>
+        
+        <div style="background: #f0f9ff; padding: 15px; border-radius: 12px; border: 1px solid #e0f2fe;">
+            <h4 style="color: #1e293b; margin-bottom: 10px; font-size: 14px;">👥 Developed by Group 4:</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; color: #475569;">
+                <div>• Yves Anana</div>
+                <div>• Laudz Fenelus</div>
+                <div>• Karla Jaraba Vengoechea</div>
+                <div>• Shayla Konosky</div>
+                <div>• Wilmise</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phone-container">
+        <div class="screen">
+            <!-- Header -->
+            <div class="header">
+                <h1>
+                    <div class="header-logo">
+                        <div class="header-circles">
+                            <div class="header-circle-1"></div>
+                            <div class="header-circle-2"></div>
+                        </div>
+                        SyncWell
+                    </div>
+                </h1>
+                <p>Your Community Diabetes Companion</p>
+            </div>
+
+            <div class="screen-content">
+                <!-- Navigation Tabs -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" onclick="showScreen('dashboard')">Dashboard</button>
+                    <button class="nav-tab" onclick="showScreen('kiosks')">Kiosks</button>
+                    <button class="nav-tab" onclick="showScreen('rewards')">Rewards</button>
+                    <button class="nav-tab" onclick="showScreen('market')">Market</button>
+                    <button class="nav-tab" onclick="showScreen('history')">History</button>
+                    <button class="nav-tab" onclick="showScreen('education')">Learn</button>
+                </div>
+
+                <!-- Dashboard Screen -->
+                <div id="dashboard" class="screen-tab">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="current-glucose">142</div>
+                            <div class="stat-label">Current Glucose</div>
+                            <div class="stat-timestamp">📍 Library • 9:15 AM</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="points-earned">1,247</div>
+                            <div class="stat-label">Points Earned</div>
+                            <div class="stat-timestamp">Last updated: 2h ago</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">Day Streak</div>
+                            <div class="stat-timestamp">Keep it going! 🔥</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">85%</div>
+                            <div class="stat-label">In Target Range</div>
+                            <div class="stat-timestamp">This week: Excellent</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Weekly Glucose Trends</div>
+                        <div class="chart">
+                            <div class="chart-bar" style="height: 60%;" data-value="128"></div>
+                            <div class="chart-bar" style="height: 75%;" data-value="142"></div>
+                            <div class="chart-bar" style="height: 45%;" data-value="118"></div>
+                            <div class="chart-bar" style="height: 80%;" data-value="156"></div>
+                            <div class="chart-bar" style="height: 55%;" data-value="134"></div>
+                            <div class="chart-bar" style="height: 70%;" data-value="145"></div>
+                            <div class="chart-bar" style="height: 65%;" data-value="139"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Quick Actions</div>
+                        <div class="action-grid">
+                            <div class="action-card" onclick="showScreen('kiosks')">
+                                <div class="action-icon">📱</div>
+                                <div class="action-text">Find Kiosk</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('market')">
+                                <div class="action-icon">🛒</div>
+                                <div class="action-text">Marketplace</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('rewards')">
+                                <div class="action-icon">🎁</div>
+                                <div class="action-text">View Rewards</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('education')">
+                                <div class="action-icon">📚</div>
+                                <div class="action-text">Learn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Screen -->
+                <div id="market" class="screen-tab hidden">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="nav-tab" style="flex: 1;" id="market-browse-btn" onclick="toggleMarketView('browse')">Browse</button>
+                        <button class="nav-tab" style="flex: 1;" id="market-map-btn" onclick="toggleMarketView('map')">Map</button>
+                    </div>
+
+                    <div id="market-map-view" class="card hidden">
+                        <div class="card-title">🛒 Partner Locations Map</div>
+                        <div style="height: 200px; background: linear-gradient(135deg, #f0f9ff, #ecfdf5); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                            <div style="text-align: center; color: #64748b;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🗺️</div>
+                                <div style="font-size: 14px; font-weight: 600;">Partner Locations</div>
+                                <div style="font-size: 12px;">Restaurants, gyms, markets near you</div>
+                            </div>
+                            <!-- Restaurant markers -->
+                            <div style="position: absolute; top: 25%; left: 20%; width: 30px; height: 30px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; box-shadow: 0 2px 8px rgba(16,185,129,0.4);">🥗</div>
+                            <div style="position: absolute; top: 65%; left: 75%; width: 30px; height: 30px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; box-shadow: 0 2px 8px rgba(16,185,129,0.4);">🍲</div>
+                            <!-- Fitness markers -->
+                            <div style="position: absolute; top: 40%; left: 60%; width: 30px; height: 30px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; box-shadow: 0 2px 8px rgba(59,130,246,0.4);">🏋️</div>
+                            <!-- Grocery markers -->
+                            <div style="position: absolute; top: 70%; left: 35%; width: 30px; height: 30px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; box-shadow: 0 2px 8px rgba(245,158,11,0.4);">🥕</div>
+                            <!-- Event markers -->
+                            <div style="position: absolute; top: 30%; left: 80%; width: 30px; height: 30px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; box-shadow: 0 2px 8px rgba(239,68,68,0.4);">🎬</div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: #10b981; border-radius: 50%;"></div>
+                                <span>Restaurants</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: #3b82f6; border-radius: 50%;"></div>
+                                <span>Fitness Centers</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: #f59e0b; border-radius: 50%;"></div>
+                                <span>Markets</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 15px; height: 15px; background: #ef4444; border-radius: 50%;"></div>
+                                <span>Events</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="market-browse-view">
+                        <div class="card">
+                            <div class="card-title">🍽️ Healthy Dining</div>
+                            
+                            <div class="market-item" onclick="redeemMeal()">
+                                <div class="market-icon">🥗</div>
+                                <div class="market-info">
+                                    <div class="market-title">Green Cafe - Diabetes Special</div>
+                                    <div class="market-description">Complete meal with carb count, under 30g carbs</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 123 Green Street • 0.4 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">300 points</span>
+                                        <span class="market-discount">20% off</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="market-item" onclick="redeemRestaurant('Wellness Bistro', 320, 'WB-2024-3456')">
+                                <div class="market-icon">🍲</div>
+                                <div class="market-info">
+                                    <div class="market-title">Wellness Bistro - Heart Healthy</div>
+                                    <div class="market-description">Low sodium, high fiber meals</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 789 Wellness Ave • 0.8 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">320 points</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">🏃 Fitness & Wellness</div>
+                            
+                            <div class="market-item" onclick="redeemGymPass()">
+                                <div class="market-icon">🏋️</div>
+                                <div class="market-info">
+                                    <div class="market-title">FitCenter Day Pass</div>
+                                    <div class="market-description">Full access to gym and pool facilities</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 456 Fitness Ave • 1.1 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">200 points</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">🛒 Fresh Produce</div>
+                            
+                            <div class="market-item" onclick="redeemGrocery('Farmers Market Voucher', 150, 'FM-2024-7891', '$10 credit for fresh produce')">
+                                <div class="market-icon">🥕</div>
+                                <div class="market-info">
+                                    <div class="market-title">Farmers Market $10 Voucher</div>
+                                    <div class="market-description">Fresh vegetables, fruits, and herbs</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 Downtown Square • 0.6 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">150 points</span>
+                                        <span class="market-discount">New!</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">🎭 Social & Events</div>
+                            
+                            <div class="market-item" onclick="redeemEvent('Cinema Health Documentary', 180, 'CINEMA-DOC-2024', 'Living Well with Diabetes + healthy snacks')">
+                                <div class="market-icon">🎬</div>
+                                <div class="market-info">
+                                    <div class="market-title">Medville Cinema - Health Documentary</div>
+                                    <div class="market-description">"Living Well with Diabetes" + healthy snacks included</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 555 Movie Lane • 0.9 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">180 points</span>
+                                        <span class="market-discount">Limited Time</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="market-item" onclick="redeemEvent('Community Walkathon', 50, 'WALK-2024-100', '3-mile group walk + education booth')">
+                                <div class="market-icon">🚶‍♀️</div>
+                                <div class="market-info">
+                                    <div class="market-title">Monthly Community Walkathon</div>
+                                    <div class="market-description">3-mile group walk + diabetes education booth</div>
+                                    <div style="font-size: 10px; color: #94a3b8; margin-bottom: 5px;">📍 Central Park • 0.3 miles</div>
+                                    <div class="market-price">
+                                        <span class="market-cost">50 points</span>
+                                        <span class="market-discount">+100 pts earned!</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rewards Screen -->
+                <div id="rewards" class="screen-tab hidden">
+                    <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);">
+                        <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;" id="total-points">1,247</div>
+                        <div>Available Points</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Recent Redemptions</div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #e2e8f0;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 16px; color: white;">🥗</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 3px; font-size: 13px;">Green Cafe - Quinoa Power Bowl</div>
+                                <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">Redeemed yesterday • Code: GC-2024-5567</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">-300 points</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #e2e8f0;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 16px; color: white;">🏃</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 3px; font-size: 13px;">FitCenter Day Pass</div>
+                                <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;">Used 3 days ago • 45 min workout logged</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">-200 points</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Points Summary</div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">2,145</div>
+                                <div class="stat-label">Total Earned</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">898</div>
+                                <div class="stat-label">Total Spent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">15</div>
+                                <div class="stat-label">Items Redeemed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">$127</div>
+                                <div class="stat-label">Value Saved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kiosks Screen -->
+                <div id="kiosks" class="screen-tab hidden">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="nav-tab" style="flex: 1;" id="kiosk-list-btn" onclick="toggleKioskView('list')">List View</button>
+                        <button class="nav-tab" style="flex: 1;" id="kiosk-map-btn" onclick="toggleKioskView('map')">Map View</button>
+                    </div>
+
+                    <div id="kiosk-map-view" class="card hidden">
+                        <div class="card-title">📍 Kiosk Locations Map</div>
+                        <div style="height: 200px; background: linear-gradient(135deg, #f0f9ff, #ecfdf5); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                            <div style="text-align: center; color: #64748b;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🗺️</div>
+                                <div style="font-size: 14px; font-weight: 600;">Interactive Map</div>
+                                <div style="font-size: 12px;">Showing 4 nearby kiosks</div>
+                            </div>
+                            <!-- Map markers -->
+                            <div style="position: absolute; top: 30%; left: 25%; width: 25px; height: 25px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(59,130,246,0.4);">📍</div>
+                            <div style="position: absolute; top: 60%; left: 70%; width: 25px; height: 25px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(16,185,129,0.4);">📍</div>
+                            <div style="position: absolute; top: 45%; left: 50%; width: 25px; height: 25px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(245,158,11,0.4);">📍</div>
+                            <div style="position: absolute; top: 70%; left: 30%; width: 25px; height: 25px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; box-shadow: 0 2px 8px rgba(239,68,68,0.4);">📍</div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="text-align: center;" id="kiosk-qr-section">
+                        <div class="card-title">Your QR Code</div>
+                        <div style="width: 150px; height: 150px; background: white; border: 2px solid #3b82f6; border-radius: 12px; margin: 20px auto; position: relative; overflow: hidden;">
+                            <div class="qr-pattern">
+                                <div class="qr-bottom-corner"></div>
+                                <div class="qr-center"></div>
+                            </div>
+                        </div>
+                        <p style="color: #64748b; font-size: 12px; margin-bottom: 15px;">Show this code at any SyncWell kiosk</p>
+                        
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: #1e293b; font-size: 14px;">How to Use:</div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+                                <div style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; font-weight: bold;">1</div>
+                                <div>Approach any SyncWell kiosk</div>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+                                <div style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; font-weight: bold;">2</div>
+                                <div>Tap "Start Test" on kiosk screen</div>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+                                <div style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; font-weight: bold;">3</div>
+                                <div>Scan your QR code on the scanner</div>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+                                <div style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; font-weight: bold;">4</div>
+                                <div>Follow voice instructions for glucose test</div>
+                            </div>
+                            <div style="display: flex; align-items: center; font-size: 12px;">
+                                <div style="background: #3b82f6; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 10px; font-weight: bold;">5</div>
+                                <div>Results sync automatically to your app</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" onclick="simulateKioskUse()">🔍 Simulate Kiosk Test</button>
+                    </div>
+
+                    <div id="kiosk-list-view">
+                        <div class="card">
+                            <div class="card-title">Nearby Locations</div>
+                            
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px; font-size: 14px;">📍 Medville Community Library</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">123 Main Street • Open 8 AM - 8 PM</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;">0.3 miles</span>
+                            </div>
+
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px; font-size: 14px;">🏪 HealthPlus Pharmacy</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">456 Oak Avenue • Open 24/7</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;">0.7 miles</span>
+                            </div>
+
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px; font-size: 14px;">🏢 Wellness Community Center</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">789 Pine Road • Open 6 AM - 10 PM</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;">1.2 miles</span>
+                            </div>
+
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px; font-size: 14px;">🛒 FreshMart Grocery</div>
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">321 Elm Street • Open 7 AM - 11 PM</div>
+                                <span style="background: #ecfdf5; color: #10b981; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;">1.5 miles</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Screen -->
+                <div id="history" class="screen-tab hidden">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="nav-tab" style="flex: 1;" id="history-all-btn" onclick="filterHistory('all')">All</button>
+                        <button class="nav-tab" style="flex: 1;" id="history-tests-btn" onclick="filterHistory('tests')">Tests</button>
+                        <button class="nav-tab" style="flex: 1;" id="history-meals-btn" onclick="filterHistory('meals')">Meals</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Recent Activity</div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #10b981; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 11px; color: #64748b;">Today, 9:15 AM</div>
+                                <div style="font-size: 10px; background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 10px; font-weight: 600;">Glucose Test</div>
+                            </div>
+                            <div style="font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">142 mg/dL</div>
+                            <div style="font-size: 12px; color: #64748b;">✅ Good Control</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">📍 Medville Community Library</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #10b981; border: 1px solid #e2e8f0; cursor: pointer;" onclick="expandHistoryItem(this)">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 11px; color: #64748b;">Yesterday, 2:30 PM</div>
+                                <div style="font-size: 10px; background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 10px; font-weight: 600;">Meal + Test</div>
+                            </div>
+                            <div style="font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">156 mg/dL</div>
+                            <div style="font-size: 12px; color: #64748b;">⚠️ Post-meal spike</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">📍 Green Cafe</div>
+                            
+                            <div style="background: #fff; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #fbbf24;">
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #90EE90, #228B22); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">🥗</div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b; font-size: 13px; margin-bottom: 2px;">Quinoa Power Bowl</div>
+                                        <div style="font-size: 11px; color: #64748b;">Green Cafe • Redeemed with 300 points</div>
+                                        <div style="font-size: 10px; color: #94a3b8; margin-top: 3px;">📍 123 Green Street • Order #QP-2024-891</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">380</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Calories</div>
+                                    </div>
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">28g</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Carbs</div>
+                                    </div>
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">12g</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Fiber</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="background: #f0f9ff; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #3b82f6;">
+                                    <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;"><strong>Chef's Notes:</strong></div>
+                                    <div style="font-size: 10px; color: #475569;">Organic quinoa, massaged kale, roasted chickpeas, fresh avocado, hemp seeds, house-made lemon tahini dressing. Specially designed for blood sugar stability with slow-release carbs and high fiber content.</div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; color: #10b981;">134</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Before Meal</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; color: #94a3b8;">→</div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; color: #f59e0b;">156</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">After Meal</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #10b981; border: 1px solid #e2e8f0; cursor: pointer;" onclick="expandHistoryItem(this)">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 11px; color: #64748b;">3 days ago, 7:15 PM</div>
+                                <div style="font-size: 10px; background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 10px; font-weight: 600;">Meal + Test</div>
+                            </div>
+                            <div style="font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">168 mg/dL</div>
+                            <div style="font-size: 12px; color: #64748b;">⚠️ High</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">📍 FitCenter Cafe</div>
+                            
+                            <div style="background: #fff; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #fbbf24;">
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">🍝</div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b; font-size: 13px; margin-bottom: 2px;">Whole Grain Pasta Bowl</div>
+                                        <div style="font-size: 11px; color: #64748b;">FitCenter Cafe • Redeemed with 280 points</div>
+                                        <div style="font-size: 10px; color: #94a3b8; margin-top: 3px;">📍 456 Fitness Ave • Order #WP-2024-445</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">420</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Calories</div>
+                                    </div>
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">45g</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Carbs</div>
+                                    </div>
+                                    <div style="text-align: center; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #3b82f6;">8g</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Fiber</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="background: #fff8e7; padding: 10px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #f59e0b;">
+                                    <div style="font-size: 11px; color: #64748b; margin-bottom: 5px;"><strong>Post-Workout Special:</strong></div>
+                                    <div style="font-size: 10px; color: #475569;">Whole grain penne pasta, grilled chicken breast, steamed broccoli, light parmesan, olive oil drizzle. Higher carb content designed for muscle recovery after exercise, but may cause glucose spike in diabetics.</div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; color: #10b981;">145</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">Before Meal</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; color: #94a3b8;">→</div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; color: #ef4444;">168</div>
+                                        <div style="font-size: 9px; color: #64748b; text-transform: uppercase;">After Meal</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #10b981; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 11px; color: #64748b;">2 days ago, 8:00 AM</div>
+                                <div style="font-size: 10px; background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 10px; font-weight: 600;">Glucose Test</div>
+                            </div>
+                            <div style="font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">118 mg/dL</div>
+                            <div style="font-size: 12px; color: #64748b;">✅ Excellent Fasting</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">📍 FreshMart Grocery</div>
+                        </div>
+
+                        <button class="btn" onclick="exportHistory()">📤 Export History Report</button>
+                    </div>
+                </div>
+
+                <!-- Education Screen -->
+                <div id="education" class="screen-tab hidden">
+                    <div class="card">
+                        <div class="card-title">📚 Learning Progress</div>
+                        <div style="background: #f0f9ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0f2fe;">
+                            <div style="font-size: 12px; color: #0369a1; text-align: center;">
+                                <strong>Active Lessons: <span id="active-lessons">2</span>/3</strong><br>
+                                <span style="font-size: 10px;">Complete current lessons to unlock new content</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 25px; height: 25px; background: linear-gradient(135deg, #3b82f6, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; color: white;">📊</div>
+                                Understanding Your Numbers
+                            </div>
+                            <div style="font-size: 10px; background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 10px; font-weight: 600;">ACTIVE</div>
+                        </div>
+                        <div style="font-size: 12px; color: #64748b; line-height: 1.4; margin-bottom: 15px;">
+                            Target glucose range: 80-130 mg/dL before meals, under 180 mg/dL after meals. Regular monitoring helps you understand how food, exercise, and medication affect your levels.
+                        </div>
+                        <div style="background: #e2e8f0; border-radius: 12px; height: 6px; margin: 8px 0; overflow: hidden;">
+                            <div style="background: linear-gradient(135deg, #3b82f6, #10b981); height: 100%; border-radius: 12px; width: 90%;" id="lesson1-progress"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #64748b; font-size: 10px;">Progress: 9/10 lessons completed</small>
+                            <button style="background: linear-gradient(135deg, #3b82f6, #10b981); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-weight: 600; cursor: pointer;" onclick="earnEducationPoints(1)">Complete (+50 pts)</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 25px; height: 25px; background: linear-gradient(135deg, #3b82f6, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; color: white;">🍎</div>
+                                Healthy Eating Tips
+                            </div>
+                            <div style="font-size: 10px; background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 10px; font-weight: 600;">ACTIVE</div>
+                        </div>
+                        <div style="font-size: 12px; color: #64748b; line-height: 1.4; margin-bottom: 15px;">
+                            Focus on fiber-rich vegetables, lean proteins, and whole grains. Local partners like Green Cafe offer diabetes-friendly meals with carb counts clearly marked.
+                        </div>
+                        <div style="background: #e2e8f0; border-radius: 12px; height: 6px; margin: 8px 0; overflow: hidden;">
+                            <div style="background: linear-gradient(135deg, #3b82f6, #10b981); height: 100%; border-radius: 12px; width: 60%;" id="lesson2-progress"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #64748b; font-size: 10px;">Progress: 6/10 lessons completed</small>
+                            <button style="background: linear-gradient(135deg, #3b82f6, #10b981); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-weight: 600; cursor: pointer;" onclick="earnEducationPoints(2)">Continue (+50 pts)</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 25px; height: 25px; background: linear-gradient(135deg, #3b82f6, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; color: white;">🏃</div>
+                                Exercise and Movement
+                            </div>
+                            <div style="font-size: 10px; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 10px; font-weight: 600;">LOCKED</div>
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 15px;">
+                            Complete 2 current lessons to unlock this module about exercise and glucose control.
+                        </div>
+                        <div style="background: #e2e8f0; border-radius: 12px; height: 6px; margin: 8px 0; overflow: hidden;">
+                            <div style="background: #cbd5e1; height: 100%; border-radius: 12px; width: 0%;" id="lesson3-progress"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #94a3b8; font-size: 10px;">Progress: 0/10 lessons completed</small>
+                            <button style="background: #94a3b8; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-weight: 600; cursor: not-allowed;" disabled>Locked</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 25px; height: 25px; background: #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; color: white;">💊</div>
+                                Medication Management
+                            </div>
+                            <div style="font-size: 10px; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 10px; font-weight: 600;">LOCKED</div>
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 15px;">
+                            Complete previous lessons to unlock medication management training.
+                        </div>
+                        <div style="background: #e2e8f0; border-radius: 12px; height: 6px; margin: 8px 0; overflow: hidden;">
+                            <div style="background: #cbd5e1; height: 100%; border-radius: 12px; width: 0%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #94a3b8; font-size: 10px;">Progress: 0/10 lessons completed</small>
+                            <button style="background: #94a3b8; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-weight: 600; cursor: not-allowed;" disabled>Locked</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight: 600; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 25px; height: 25px; background: #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; color: white;">🩺</div>
+                                Working with Healthcare Providers
+                            </div>
+                            <div style="font-size: 10px; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 10px; font-weight: 600;">LOCKED</div>
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8; line-height: 1.4; margin-bottom: 15px;">
+                            Complete previous lessons to unlock healthcare provider communication training.
+                        </div>
+                        <div style="background: #e2e8f0; border-radius: 12px; height: 6px; margin: 8px 0; overflow: hidden;">
+                            <div style="background: #cbd5e1; height: 100%; border-radius: 12px; width: 0%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small style="color: #94a3b8; font-size: 10px;">Progress: 0/10 lessons completed</small>
+                            <button style="background: #94a3b8; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-weight: 600; cursor: not-allowed;" disabled>Locked</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-footer">
+        <p>🎓 Created for HIM 6694 Consumer Health Informatics</p>
+        <p>Professor Pouyan Esmaeil Zadeh, PhD</p>
+        <p><strong>Now featuring Pure Sync design philosophy!</strong></p>
+    </div>
+
+    <script>
+        let currentPoints = 1247;
+        let activeLessons = 2;
+        let lesson1Progress = 90;
+        let lesson2Progress = 60;
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen-tab').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(screenName).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        function toggleKioskView(view) {
+            const listView = document.getElementById('kiosk-list-view');
+            const mapView = document.getElementById('kiosk-map-view');
+            const qrSection = document.getElementById('kiosk-qr-section');
+            const listBtn = document.getElementById('kiosk-list-btn');
+            const mapBtn = document.getElementById('kiosk-map-btn');
+            
+            listBtn.classList.remove('active');
+            mapBtn.classList.remove('active');
+            
+            if (view === 'map') {
+                listView.classList.add('hidden');
+                qrSection.classList.add('hidden');
+                mapView.classList.remove('hidden');
+                mapBtn.classList.add('active');
+            } else {
+                listView.classList.remove('hidden');
+                qrSection.classList.remove('hidden');
+                mapView.classList.add('hidden');
+                listBtn.classList.add('active');
+            }
+        }
+
+        function toggleMarketView(view) {
+            const browseView = document.getElementById('market-browse-view');
+            const mapView = document.getElementById('market-map-view');
+            const browseBtn = document.getElementById('market-browse-btn');
+            const mapBtn = document.getElementById('market-map-btn');
+            
+            browseBtn.classList.remove('active');
+            mapBtn.classList.remove('active');
+            
+            if (view === 'map') {
+                browseView.classList.add('hidden');
+                mapView.classList.remove('hidden');
+                mapBtn.classList.add('active');
+            } else {
+                browseView.classList.remove('hidden');
+                mapView.classList.add('hidden');
+                browseBtn.classList.add('active');
+            }
+        }
+
+        function filterHistory(type) {
+            const allBtn = document.getElementById('history-all-btn');
+            const testsBtn = document.getElementById('history-tests-btn');
+            const mealsBtn = document.getElementById('history-meals-btn');
+            
+            allBtn.classList.remove('active');
+            testsBtn.classList.remove('active');
+            mealsBtn.classList.remove('active');
+            
+            if (type === 'all') allBtn.classList.add('active');
+            else if (type === 'tests') testsBtn.classList.add('active');
+            else if (type === 'meals') mealsBtn.classList.add('active');
+            
+            showAchievement('Filter Applied', `Showing ${type === 'all' ? 'all records' : type === 'tests' ? 'glucose tests only' : 'meal-related records'}`);
+        }
+
+        function expandHistoryItem(item) {
+            const mealDetails = item.querySelector('[style*="background: #fff"]');
+            if (mealDetails) {
+                showAchievement('Meal Analysis', 'Detailed nutrition and glucose impact data');
+            } else {
+                showAchievement('Test Details', 'Glucose reading with location and context');
+            }
+        }
+
+        function exportHistory() {
+            showAchievement('Export Ready!', 'History report generated for your healthcare provider');
+        }
+
+        function simulateKioskUse() {
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 10px;">Processing Glucose Test</div>
+                <div style="font-size: 12px; text-align: center; opacity: 0.8;">
+                    <div id="step1">✅ QR Code Scanned</div>
+                    <div id="step2">🔄 Calibrating Glucometer...</div>
+                    <div id="step3">⏳ Waiting for blood sample...</div>
+                    <div id="step4">⏳ Analyzing glucose level...</div>
+                    <div id="step5">⏳ Syncing to your account...</div>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+            
+            setTimeout(() => {
+                document.getElementById('step2').innerHTML = '✅ Glucometer Ready';
+                document.getElementById('step3').innerHTML = '🔄 Processing blood sample...';
+            }, 1500);
+            
+            setTimeout(() => {
+                document.getElementById('step3').innerHTML = '✅ Sample Processed';
+                document.getElementById('step4').innerHTML = '🔄 Analyzing glucose level...';
+            }, 3000);
+            
+            setTimeout(() => {
+                document.getElementById('step4').innerHTML = '✅ Analysis Complete';
+                document.getElementById('step5').innerHTML = '🔄 Syncing to your account...';
+            }, 4500);
+            
+            setTimeout(() => {
+                document.getElementById('step5').innerHTML = '✅ Sync Complete';
+                loadingOverlay.remove();
+                
+                const newGlucose = 134;
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('current-glucose').textContent = newGlucose;
+                document.querySelector('.stat-timestamp').textContent = `📍 Library • ${timestamp}`;
+                
+                currentPoints += 25;
+                updatePointsDisplay();
+                showAchievement('Great job!', '+25 points for consistent monitoring');
+            }, 6000);
+        }
+
+        function createRedemptionOverlay(title, code, name, details) {
+            const redemptionOverlay = document.createElement('div');
+            redemptionOverlay.className = 'loading-overlay';
+            redemptionOverlay.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 300px;">
+                    <div style="font-size: 20px; font-weight: bold; color: #3b82f6; margin-bottom: 15px;">${title}</div>
+                    <div style="width: 150px; height: 150px; background: white; border: 2px solid #3b82f6; border-radius: 12px; margin: 20px auto; position: relative; overflow: hidden;">
+                        <div class="qr-pattern">
+                            <div class="qr-bottom-corner"></div>
+                            <div class="qr-center"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 10px;">${name}</div>
+                    <div style="font-size: 16px; font-weight: bold; color: #3b82f6; margin-bottom: 15px;">Code: ${code}</div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;"><strong>Details:</strong></div>
+                        <div style="font-size: 11px; color: #475569; text-align: left;">${details}</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: linear-gradient(135deg, #3b82f6, #10b981); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 12px; cursor: pointer;">Got it!</button>
+                </div>
+            `;
+            document.body.appendChild(redemptionOverlay);
+        }
+
+        function redeemMeal() {
+            if (currentPoints >= 300) {
+                currentPoints -= 300;
+                updatePointsDisplay();
+                createRedemptionOverlay(
+                    '🥗 Meal Voucher',
+                    'GC-2024-5567',
+                    'Green Cafe - Diabetes Special',
+                    '• Choice of diabetes-friendly meals<br>• Carb count displayed on menu<br>• Location: 123 Green Street<br>• Valid: 7 days from issue<br>• Pre/post meal glucose tracking available'
+                );
+                showAchievement('Meal Voucher Ready!', 'Show QR code to server at Green Cafe');
+            }
+        }
+
+        function redeemGymPass() {
+            if (currentPoints >= 200) {
+                currentPoints -= 200;
+                updatePointsDisplay();
+                createRedemptionOverlay(
+                    '🏃 Gym Day Pass',
+                    'FC-2024-1423',
+                    'FitCenter Day Pass',
+                    '• Full gym + pool access<br>• Valid: Today only<br>• Location: 456 Fitness Ave<br>• Track: Exercise time & activities<br>• Workout data syncs to your profile'
+                );
+                showAchievement('Gym Pass Ready!', 'Show QR code at FitCenter entrance');
+            }
+        }
+
+        function redeemRestaurant(name, points, code) {
+            if (currentPoints >= points) {
+                currentPoints -= points;
+                updatePointsDisplay();
+                createRedemptionOverlay(
+                    '🍽️ Restaurant Voucher',
+                    code,
+                    name,
+                    '• Heart-healthy menu options<br>• Low sodium, high fiber meals<br>• Valid: 14 days from issue<br>• Location: 789 Wellness Ave<br>• Pre/post meal glucose tracking available'
+                );
+                showAchievement('Restaurant Voucher!', `Show QR code at ${name}`);
+            }
+        }
+
+        function redeemGrocery(name, points, code, description) {
+            if (currentPoints >= points) {
+                currentPoints -= points;
+                updatePointsDisplay();
+                createRedemptionOverlay(
+                    '🛒 Grocery Voucher',
+                    code,
+                    name,
+                    `• ${description}<br>• Focus on diabetes-friendly foods<br>• Valid: 30 days from issue<br>• Purchase tracking included<br>• Items appear in your food history`
+                );
+                showAchievement('Grocery Voucher!', 'Show QR code at checkout');
+            }
+        }
+
+        function redeemEvent(name, points, code, description) {
+            if (currentPoints >= points) {
+                currentPoints -= points;
+                updatePointsDisplay();
+                createRedemptionOverlay(
+                    '🎭 Event Ticket',
+                    code,
+                    name,
+                    `• ${description}<br>• Educational components included<br>• Community networking opportunity<br>• Attendance tracking for points<br>• Health tips and resources provided`
+                );
+                showAchievement('Event Ticket!', `Show QR code at ${name}`);
+            }
+        }
+
+        function earnEducationPoints(lessonNum) {
+            if (activeLessons >= 3) {
+                showAchievement('Lesson Limit Reached', 'Complete current lessons to unlock new content');
+                return;
+            }
+
+            currentPoints += 50;
+            updatePointsDisplay();
+            
+            if (lessonNum === 1) {
+                lesson1Progress = 100;
+                document.getElementById('lesson1-progress').style.width = '100%';
+                activeLessons--;
+                checkLessonUnlocks();
+                showAchievement('Lesson Complete!', '+50 points • Understanding Your Numbers finished');
+            } else if (lessonNum === 2) {
+                lesson2Progress += 10;
+                document.getElementById('lesson2-progress').style.width = lesson2Progress + '%';
+                if (lesson2Progress >= 100) {
+                    activeLessons--;
+                    checkLessonUnlocks();
+                    showAchievement('Lesson Complete!', '+50 points • Healthy Eating Tips finished');
+                } else {
+                    showAchievement('Progress Made!', '+50 points • Lesson updated');
+                }
+            }
+            
+            document.getElementById('active-lessons').textContent = activeLessons;
+        }
+
+        function checkLessonUnlocks() {
+            if (activeLessons < 3) {
+                // Unlock next lesson logic here
+                showAchievement('New Content Available!', 'A new lesson has been unlocked');
+            }
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById('points-earned').textContent = currentPoints.toLocaleString();
+            document.getElementById('total-points').textContent = currentPoints.toLocaleString();
+        }
+
+        function showAchievement(title, message) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.innerHTML = `
+                <div style="font-size: 24px; margin-bottom: 10px;">🏆</div>
+                <div style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">${title}</div>
+                <div style="font-size: 14px;">${message}</div>
+            `;
+            
+            document.body.appendChild(achievement);
+            setTimeout(() => achievement.remove(), 3000);
+        }
+
+        // Initialize views
+        window.addEventListener('load', () => {
+            // Set default active buttons
+            document.getElementById('kiosk-list-btn').classList.add('active');
+            document.getElementById('market-browse-btn').classList.add('active');
+            document.getElementById('history-all-btn').classList.add('active');
+            
+            setTimeout(() => {
+                showAchievement('Welcome to SyncWell!', 'Experience the essence of synchronization in healthcare!');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
