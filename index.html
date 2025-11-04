@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncWell - Community Diabetes Management</title>
+    <meta name="description" content="Interactive demo of SyncWell - Community-based diabetes management app with kiosks, rewards, and education">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .demo-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .demo-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .demo-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+            max-width: 600px;
+        }
+
+        .demo-info h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .demo-info ul {
+            color: white;
+            list-style: none;
+            padding: 0;
+        }
+
+        .demo-info li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .demo-info li::before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .phone-container {
+            width: min(375px, 90vw);
+            height: min(667px, 80vh);
+            background: #000;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 10px 4px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: #2E8B57;
+            color: white;
+        }
+
+        /* Dashboard Styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 4px solid #2E8B57;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2E8B57;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .chart {
+            height: 120px;
+            background: linear-gradient(to right, #e8f5e8, #f0f8f0);
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            align-items: end;
+            padding: 10px;
+            justify-content: space-around;
+        }
+
+        .chart-bar {
+            width: 18px;
+            background: linear-gradient(to top, #2E8B57, #3CB371);
+            border-radius: 3px 3px 0 0;
+            margin: 0 2px;
+            position: relative;
+        }
+
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #666;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .action-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .action-card:hover {
+            background: #e8f5e8;
+            border-color: #2E8B57;
+        }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .action-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Recent Activity */
+        .recent-activity {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 16px;
+            color: white;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .activity-points {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2E8B57;
+        }
+
+        /* Health Tips */
+        .health-tips {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tip-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2E8B57;
+        }
+
+        .tip-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .tip-content {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* History Styles */
+        .history-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #2E8B57;
+            color: white;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            border-left: 4px solid #2E8B57;
+        }
+
+        .history-date {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .history-reading {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E8B57;
+            margin-bottom: 5px;
+        }
+
+        .history-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-location {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Market Styles */
+        .market-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .category-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .market-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .market-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            color: white;
+        }
+
+        .market-info {
+            flex: 1;
+        }
+
+        .market-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .market-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .market-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .market-cost {
+            background: #e8f5e8;
+            color: #2E8B57;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .market-discount {
+            background: #ffe4e6;
+            color: #dc3545;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* QR Code Demo */
+        .qr-demo {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border: 2px solid #2E8B57;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #2E8B57;
+        }
+
+        /* Location Cards */
+        .location-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            border-left: 4px solid #2E8B57;
+        }
+
+        .location-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .location-details {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .distance {
+            display: inline-block;
+            background: #e8f5e8;
+            color: #2E8B57;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Rewards */
+        .points-balance {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(255,215,0,0.3);
+        }
+
+        .points-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .reward-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .reward-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+
+        .reward-info {
+            flex: 1;
+        }
+
+        .reward-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+
+        .reward-description {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .reward-cost {
+            background: #e8f5e8;
+            color: #2E8B57;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Education */
+        .education-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .education-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .education-icon {
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .education-content {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 6px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #2E8B57, #3CB371);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46,139,87,0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+
+        .demo-message {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 12px;
+            color: #2E8B57;
+            text-align: center;
+        }
+
+        /* Achievement Animation */
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+            z-index: 1000;
+            animation: achievementPop 3s ease-in-out;
+        }
+
+        @keyframes achievementPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        .demo-footer {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            max-width: 600px;
+        }
+
+        .demo-footer a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #999;
+            font-size: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-5px); }
+            60% { transform: translateX(-50%) translateY(-3px); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .demo-header h1 {
+                font-size: 24px;
+            }
+            
+            .demo-header p {
+                font-size: 16px;
+            }
+            
+            .phone-container {
+                width: 100%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>🏥 SyncWell Interactive Demo</h1>
+        <p>Community-Based Diabetes Management Platform</p>
+    </div>
+
+    <div class="demo-info">
+        <h3>🎯 Demo Features:</h3>
+        <ul>
+            <li>Scrollable dashboard with detailed health insights</li>
+            <li>Community kiosk finder with QR access</li>
+            <li>Comprehensive points and rewards marketplace</li>
+            <li>Complete glucose testing history tracking</li>
+            <li>Interactive educational modules with progress</li>
+        </ul>
+    </div>
+
+    <div class="phone-container">
+        <div class="screen">
+            <!-- Header -->
+            <div class="header">
+                <h1>SyncWell</h1>
+                <p>Your Community Diabetes Companion</p>
+            </div>
+
+            <div class="screen-content">
+                <!-- Navigation Tabs -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" onclick="showScreen('dashboard')">Dashboard</button>
+                    <button class="nav-tab" onclick="showScreen('kiosks')">Kiosks</button>
+                    <button class="nav-tab" onclick="showScreen('rewards')">Rewards</button>
+                    <button class="nav-tab" onclick="showScreen('market')">Market</button>
+                    <button class="nav-tab" onclick="showScreen('history')">History</button>
+                    <button class="nav-tab" onclick="showScreen('education')">Learn</button>
+                </div>
+
+                <!-- Dashboard Screen -->
+                <div id="dashboard" class="screen-tab">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="current-glucose">142</div>
+                            <div class="stat-label">Current Glucose</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="points-earned">1,247</div>
+                            <div class="stat-label">Points Earned</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">85%</div>
+                            <div class="stat-label">In Target Range</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">Weekly Glucose Trends</div>
+                        <div class="chart">
+                            <div class="chart-bar" style="height: 60%;" data-value="128"></div>
+                            <div class="chart-bar" style="height: 75%;" data-value="142"></div>
+                            <div class="chart-bar" style="height: 45%;" data-value="118"></div>
+                            <div class="chart-bar" style="height: 80%;" data-value="156"></div>
+                            <div class="chart-bar" style="height: 55%;" data-value="134"></div>
+                            <div class="chart-bar" style="height: 70%;" data-value="145"></div>
+                            <div class="chart-bar" style="height: 65%;" data-value="139"></div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <div class="action-title">Quick Actions</div>
+                        <div class="action-grid">
+                            <div class="action-card" onclick="simulateGlucoseTest()">
+                                <div class="action-icon">📱</div>
+                                <div class="action-text">Find Kiosk</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('rewards')">
+                                <div class="action-icon">🎁</div>
+                                <div class="action-text">View Rewards</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('education')">
+                                <div class="action-icon">📚</div>
+                                <div class="action-text">Learn</div>
+                            </div>
+                            <div class="action-card" onclick="showScreen('market')">
+                                <div class="action-icon">🛒</div>
+                                <div class="action-text">Marketplace</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <div class="action-title">Recent Activity</div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📊</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Glucose Test at Library</div>
+                                <div class="activity-time">2 hours ago</div>
+                            </div>
+                            <div class="activity-points">+25 pts</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">🎁</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Redeemed Farmers Market Voucher</div>
+                                <div class="activity-time">Yesterday</div>
+                            </div>
+                            <div class="activity-points">-150 pts</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📚</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Completed Nutrition Lesson</div>
+                                <div class="activity-time">2 days ago</div>
+                            </div>
+                            <div class="activity-points">+50 pts</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">🏃</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Used Gym Day Pass</div>
+                                <div class="activity-time">3 days ago</div>
+                            </div>
+                            <div class="activity-points">-200 pts</div>
+                        </div>
+                    </div>
+
+                    <div class="health-tips">
+                        <div class="action-title">Today's Health Tips</div>
+                        <div class="tip-card">
+                            <div class="tip-title">🌅 Morning Routine</div>
+                            <div class="tip-content">Test your glucose before breakfast for the most accurate fasting reading. Aim for 80-130 mg/dL.</div>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-title">🥗 Meal Planning</div>
+                            <div class="tip-content">Use your points at Green Cafe for a diabetes-friendly lunch. They display carb counts for all meals.</div>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-title">💧 Stay Hydrated</div>
+                            <div class="tip-content">Drinking water helps maintain healthy glucose levels. Aim for 8 glasses throughout the day.</div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="showRecentActivity()">📊 View Detailed Reports</button>
+                    
+                    <div class="scroll-indicator">Scroll to see more ↓</div>
+                </div>
+
+                <!-- Kiosks Screen -->
+                <div id="kiosks" class="screen-tab hidden">
+                    <div class="qr-demo">
+                        <h3 style="margin-bottom: 15px; color: #333; font-size: 16px;">Your QR Code</h3>
+                        <div class="qr-code">📱</div>
+                        <p style="color: #666; font-size: 12px;">Show this code at any SyncWell kiosk</p>
+                        <button class="btn" onclick="simulateKioskUse()">🔍 Simulate Kiosk Test</button>
+                    </div>
+
+                    <h3 style="margin: 20px 0 15px 0; color: #333; font-size: 16px;">Nearby Locations</h3>
+                    
+                    <div class="location-card">
+                        <div class="location-name">📍 Medville Community Library</div>
+                        <div class="location-details">123 Main Street • Open 8 AM - 8 PM</div>
+                        <span class="distance">0.3 miles</span>
+                    </div>
+
+                    <div class="location-card">
+                        <div class="location-name">🏪 HealthPlus Pharmacy</div>
+                        <div class="location-details">456 Oak Avenue • Open 24/7</div>
+                        <span class="distance">0.7 miles</span>
+                    </div>
+
+                    <div class="location-card">
+                        <div class="location-name">🏢 Wellness Community Center</div>
+                        <div class="location-details">789 Pine Road • Open 6 AM - 10 PM</div>
+                        <span class="distance">1.2 miles</span>
+                    </div>
+
+                    <div class="location-card">
+                        <div class="location-name">🛒 FreshMart Grocery</div>
+                        <div class="location-details">321 Elm Street • Open 7 AM - 11 PM</div>
+                        <span class="distance">1.5 miles</span>
+                    </div>
+                </div>
+
+                <!-- Rewards Screen -->
+                <div id="rewards" class="screen-tab hidden">
+                    <div class="points-balance">
+                        <div class="points-number" id="total-points">1,247</div>
+                        <div>Available Points</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px; color: #333; font-size: 16px;">Available Rewards</h3>
+
+                    <div class="reward-card">
+                        <div class="reward-icon">🥗</div>
+                        <div class="reward-info">
+                            <div class="reward-title">Healthy Meal at Green Cafe</div>
+                            <div class="reward-description">Diabetes-friendly meal with nutritional info</div>
+                            <span class="reward-cost">300 points</span>
+                        </div>
+                    </div>
+
+                    <div class="reward-card">
+                        <div class="reward-icon">🏃</div>
+                        <div class="reward-info">
+                            <div class="reward-title">FitCenter Day Pass</div>
+                            <div class="reward-description">Full access to gym and pool facilities</div>
+                            <span class="reward-cost">200 points</span>
+                        </div>
+                    </div>
+
+                    <div class="reward-card">
+                        <div class="reward-icon">🥕</div>
+                        <div class="reward-info">
+                            <div class="reward-title">Farmers Market Voucher</div>
+                            <div class="reward-description">$10 credit for fresh produce</div>
+                            <span class="reward-cost">150 points</span>
+                        </div>
+                    </div>
+
+                    <div class="reward-card">
+                        <div class="reward-icon">🚌</div>
+                        <div class="reward-info">
+                            <div class="reward-title">Public Transit Day Pass</div>
+                            <div class="reward-description">Free transportation to wellness activities</div>
+                            <span class="reward-cost">100 points</span>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="redeemReward()">🎁 Redeem Selected Reward</button>
+                </div>
+
+                <!-- Market Screen -->
+                <div id="market" class="screen-tab hidden">
+                    <div class="market-category">
+                        <div class="category-title">
+                            <div class="category-icon">🍽️</div>
+                            Healthy Dining
+                        </div>
+                        
+                        <div class="market-item">
+                            <div class="market-icon">🥗</div>
+                            <div class="market-info">
+                                <div class="market-title">Green Cafe - Diabetes Special</div>
+                                <div class="market-description">Complete meal with carb count, under 30g carbs</div>
+                                <div class="market-price">
+                                    <span class="market-cost">280 points</span>
+                                    <span class="market-discount">20% off</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="market-item">
+                            <div class="market-icon">🍲</div>
+                            <div class="market-info">
+                                <div class="market-title">Wellness Bistro - Heart Healthy</div>
+                                <div class="market-description">Low sodium, high fiber meals</div>
+                                <div class="market-price">
+                                    <span class="market-cost">320 points</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="market-category">
+                        <div class="category-title">
+                            <div class="category-icon">🏃‍♂️</div>
+                            Fitness & Wellness
+                        </div>
+                        
+                        <div class="market-item">
+                            <div class="market-icon">🏋️</div>
+                            <div class="market-info">
+                                <div class="market-title">FitCenter Weekly Pass</div>
+                                <div class="market-description">7 days unlimited gym + pool access</div>
+                                <div class="market-price">
+                                    <span class="market-cost">650 points</span>
+                                    <span class="market-discount">Best Value</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="market-item">
+                            <div class="market-icon">🧘</div>
+                            <div class="market-info">
+                                <div class="market-title">Yoga Class Package</div>
+                                <div class="market-description">5 beginner-friendly yoga sessions</div>
+                                <div class="market-price">
+                                    <span class="market-cost">400 points</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="market-category">
+                        <div class="category-title">
+                            <div class="category-icon">🛒</div>
+                            Fresh Produce
+                        </div>
+                        
+                        <div class="market-item">
+                            <div class="market-icon">🥕</div>
+                            <div class="market-info">
+                                <div class="market-title">Farmers Market $15 Voucher</div>
+                                <div class="market-description">Fresh vegetables, fruits, and herbs</div>
+                                <div class="market-price">
+                                    <span class="market-cost">200 points</span>
+                                    <span class="market-discount">New!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="market-item">
+                            <div class="market-icon">🥬</div>
+                            <div class="market-info">
+                                <div class="market-title">Organic Grocery Credit</div>
+                                <div class="market-description">$20 credit at participating stores</div>
+                                <div class="market-price">
+                                    <span class="market-cost">300 points</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="market-category">
+                        <div class="category-title">
+                            <div class="category-icon">🚗</div>
+                            Transportation
+                        </div>
+                        
+                        <div class="market-item">
+                            <div class="market-icon">🚌</div>
+                            <div class="market-info">
+                                <div class="market-title">Monthly Transit Pass</div>
+                                <div class="market-description">Unlimited public transportation</div>
+                                <div class="market-price">
+                                    <span class="market-cost">800 points</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="market-item">
+                            <div class="market-icon">🚴</div>
+                            <div class="market-info">
+                                <div class="market-title">Bike Share Day Pass</div>
+                                <div class="market-description">24-hour bike rental access</div>
+                                <div class="market-price">
+                                    <span class="market-cost">80 points</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Screen -->
+                <div id="history" class="screen-tab hidden">
+                    <div class="history-filters">
+                        <button class="filter-btn active" onclick="filterHistory('all')">All</button>
+                        <button class="filter-btn" onclick="filterHistory('week')">This Week</button>
+                        <button class="filter-btn" onclick="filterHistory('month')">This Month</button>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">Today, 9:15 AM</div>
+                        <div class="history-reading">142 mg/dL</div>
+                        <div class="history-status">✅ Good Control</div>
+                        <div class="history-location">📍 Medville Community Library</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">Yesterday, 6:30 PM</div>
+                        <div class="history-reading">156 mg/dL</div>
+                        <div class="history-status">⚠️ Slightly High</div>
+                        <div class="history-location">📍 HealthPlus Pharmacy</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">Yesterday, 12:45 PM</div>
+                        <div class="history-reading">134 mg/dL</div>
+                        <div class="history-status">✅ Good Control</div>
+                        <div class="history-location">📍 Wellness Community Center</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">2 days ago, 8:00 AM</div>
+                        <div class="history-reading">118 mg/dL</div>
+                        <div class="history-status">✅ Excellent</div>
+                        <div class="history-location">📍 FreshMart Grocery</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">3 days ago, 7:15 PM</div>
+                        <div class="history-reading">168 mg/dL</div>
+                        <div class="history-status">⚠️ High</div>
+                        <div class="history-location">📍 Medville Community Library</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">3 days ago, 2:30 PM</div>
+                        <div class="history-reading">145 mg/dL</div>
+                        <div class="history-status">✅ Good Control</div>
+                        <div class="history-location">📍 HealthPlus Pharmacy</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">4 days ago, 11:00 AM</div>
+                        <div class="history-reading">139 mg/dL</div>
+                        <div class="history-status">✅ Good Control</div>
+                        <div class="history-location">📍 Wellness Community Center</div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-date">5 days ago, 9:45 AM</div>
+                        <div class="history-reading">128 mg/dL</div>
+                        <div class="history-status">✅ Excellent</div>
+                        <div class="history-location">📍 FreshMart Grocery</div>
+                    </div>
+
+                    <button class="btn" onclick="exportHistory()">📤 Export History Report</button>
+                </div>
+
+                <!-- Education Screen -->
+                <div id="education" class="screen-tab hidden">
+                    <div class="education-card">
+                        <div class="education-title">
+                            <div class="education-icon">📊</div>
+                            Understanding Your Numbers
+                        </div>
+                        <div class="education-content">
+                            Target glucose range: 80-130 mg/dL before meals, under 180 mg/dL after meals. Regular monitoring helps you understand how food, exercise, and medication affect your levels.
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 90%;"></div>
+                        </div>
+                        <small style="color: #666; font-size: 10px;">Progress: 9/10 lessons completed</small>
+                    </div>
+
+                    <div class="education-card">
+                        <div class="education-title">
+                            <div class="education-icon">🍎</div>
+                            Healthy Eating Tips
+                        </div>
+                        <div class="education-content">
+                            Focus on fiber-rich vegetables, lean proteins, and whole grains. Local partners like Green Cafe offer diabetes-friendly meals with carb counts clearly marked.
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%;"></div>
+                        </div>
+                        <small style="color: #666; font-size: 10px;">Progress: 6/10 lessons completed</small>
+                    </div>
+
+                    <div class="education-card">
+                        <div class="education-title">
+                            <div class="education-icon">🏃</div>
+                            Exercise and Movement
+                        </div>
+                        <div class="education-content">
+                            Just 30 minutes of daily activity can significantly improve glucose control. Use your SyncWell points for free gym passes and group fitness classes.
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%;"></div>
+                        </div>
+                        <small style="color: #666; font-size: 10px;">Progress: 4/10 lessons completed</small>
+                    </div>
+
+                    <div class="education-card">
+                        <div class="education-title">
+                            <div class="education-icon">💊</div>
+                            Medication Management
+                        </div>
+                        <div class="education-content">
+                            Take medications as prescribed and track how they affect your glucose levels. Set reminders and earn points for consistent adherence.
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                        </div>
+                        <small style="color: #666; font-size: 10px;">Progress: 8/10 lessons completed</small>
+                    </div>
+
+                    <div class="education-card">
+                        <div class="education-title">
+                            <div class="education-icon">🩺</div>
+                            Working with Healthcare Providers
+                        </div>
+                        <div class="education-content">
+                            Share your SyncWell data with your doctor to make informed treatment decisions. Regular check-ups help prevent complications.
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 20%;"></div>
+                        </div>
+                        <small style="color: #666; font-size: 10px;">Progress: 2/10 lessons completed</small>
+                    </div>
+
+                    <button class="btn" onclick="earnEducationPoints()">📚 Complete Next Lesson (+50 points)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-footer">
+        <p>🎓 Created for HIM 6694 Consumer Health Informatics</p>
+        <p>Professor Pouyan Esmaeil Zadeh, PhD</p>
+        <p><strong>Try the interactive features above!</strong></p>
+    </div>
+
+    <script>
+        let currentPoints = 1247;
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen-tab').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(screenName).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        function simulateGlucoseTest() {
+            showScreen('kiosks');
+            document.querySelector('[onclick="showScreen(\'kiosks\')"]').classList.add('active');
+            document.querySelector('[onclick="showScreen(\'dashboard\')"]').classList.remove('active');
+            
+            const demoMessage = document.createElement('div');
+            demoMessage.className = 'demo-message';
+            demoMessage.innerHTML = '📍 Navigation activated!<br>Medville Community Library - 0.3 miles away';
+            document.querySelector('#kiosks').appendChild(demoMessage);
+            
+            setTimeout(() => demoMessage.remove(), 3000);
+        }
+
+        function simulateKioskUse() {
+            const demoMessage = document.createElement('div');
+            demoMessage.className = 'demo-message';
+            demoMessage.innerHTML = '✅ Glucose test completed!<br>Result: 134 mg/dL (Good control)<br>+25 points earned!';
+            document.querySelector('#kiosks').appendChild(demoMessage);
+            
+            currentPoints += 25;
+            updatePointsDisplay();
+            showAchievement('Great job!', '+25 points for consistent monitoring');
+            
+            setTimeout(() => demoMessage.remove(), 4000);
+        }
+
+        function redeemReward() {
+            if (currentPoints >= 150) {
+                currentPoints -= 150;
+                updatePointsDisplay();
+                showAchievement('Reward Redeemed!', 'Farmers Market Voucher ready to use');
+                
+                const demoMessage = document.createElement('div');
+                demoMessage.className = 'demo-message';
+                demoMessage.innerHTML = '🎉 Success! Your $10 farmers market voucher is ready.<br>Code: SYNC2024';
+                document.querySelector('#rewards').appendChild(demoMessage);
+                
+                setTimeout(() => demoMessage.remove(), 5000);
+            }
+        }
+
+        function earnEducationPoints() {
+            currentPoints += 50;
+            updatePointsDisplay();
+            showAchievement('Learning Bonus!', '+50 points for completing lesson');
+            
+            const progressBars = document.querySelectorAll('.progress-fill');
+            if (progressBars[4]) {
+                progressBars[4].style.width = '30%';
+                progressBars[4].parentElement.nextElementSibling.textContent = 'Progress: 3/10 lessons completed';
+            }
+        }
+
+        function showRecentActivity() {
+            const demoMessage = document.createElement('div');
+            demoMessage.className = 'demo-message';
+            demoMessage.innerHTML = '📊 Reports show 15% improvement in glucose control!<br>Keep up the great work!';
+            document.querySelector('#dashboard').appendChild(demoMessage);
+            
+            setTimeout(() => demoMessage.remove(), 4000);
+        }
+
+        function filterHistory(period) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const demoMessage = document.createElement('div');
+            demoMessage.className = 'demo-message';
+            demoMessage.innerHTML = `📅 Showing ${period === 'all' ? 'all' : period === 'week' ? 'this week\'s' : 'this month\'s'} glucose readings`;
+            document.querySelector('#history').appendChild(demoMessage);
+            
+            setTimeout(() => demoMessage.remove(), 2000);
+        }
+
+        function exportHistory() {
+            showAchievement('Export Ready!', 'History report generated for your healthcare provider');
+            
+            const demoMessage = document.createElement('div');
+            demoMessage.className = 'demo-message';
+            demoMessage.innerHTML = '📧 Glucose history report sent to your email<br>Share with your healthcare provider at next visit';
+            document.querySelector('#history').appendChild(demoMessage);
+            
+            setTimeout(() => demoMessage.remove(), 4000);
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById('points-earned').textContent = currentPoints.toLocaleString();
+            document.getElementById('total-points').textContent = currentPoints.toLocaleString();
+        }
+
+        function showAchievement(title, message) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.innerHTML = `
+                <div style="font-size: 24px; margin-bottom: 10px;">🏆</div>
+                <div style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">${title}</div>
+                <div style="font-size: 14px;">${message}</div>
+            `;
+            
+            document.body.appendChild(achievement);
+            setTimeout(() => achievement.remove(), 3000);
+        }
+
+        // Auto-update glucose reading simulation
+        setInterval(() => {
+            const glucoseElement = document.getElementById('current-glucose');
+            if (glucoseElement) {
+                const currentValue = parseInt(glucoseElement.textContent);
+                const newValue = currentValue + Math.floor(Math.random() * 10 - 5);
+                const clampedValue = Math.max(80, Math.min(200, newValue));
+                glucoseElement.textContent = clampedValue;
+            }
+        }, 15000);
+
+        // Welcome message on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showAchievement('Welcome to SyncWell!', 'Explore the enhanced demo features');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
